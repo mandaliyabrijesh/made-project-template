@@ -2,7 +2,7 @@
 
 ## Title
 <!-- Give your project a short title. -->
-Analysis of Crime Trends in the USA: A State-by-State Study of Estimated Crimes
+**Analysis of Crime Trends in the USA: A State-by-State Study of Estimated Crimes**
 
 ## Main Question
 
