@@ -100,13 +100,19 @@ def run_pipeline():
     # Save the data to SQLite with .sqlite extension in the data folder
     save_to_sqlite(us_estimated_crimes_df, os.path.join(parent_data_dir, 'us_estimated_crimes.sqlite'), 'us_estimated_crimes_table')
     save_to_sqlite(chicago_crime_data_df, os.path.join(parent_data_dir, 'chicago_crime_data.sqlite'), 'chicago_crime_data_table')
-
-    files_to_rename = {'CrimeDate (1).csv': 'chicago_crime_data.csv', 'estimated_crimes_1979_2019.csv': 'us_estimated_crimes.csv'}
+    
+    files_to_rename = { 'CrimeDate (1).csv': 'chicago_crime_data.csv', 'estimated_crimes_1979_2019.csv': 'us_estimated_crimes.csv'}
+    
     for old_name, new_name in files_to_rename.items():
         old_path = os.path.join(parent_data_dir, old_name)
         new_path = os.path.join(parent_data_dir, new_name)
+        
+        if os.path.exists(new_path):
+            os.remove(new_path)
+            
         if os.path.exists(old_path):
             os.rename(old_path, new_path)
+
 
 # Run the pipeline
 if __name__ == "__main__":
