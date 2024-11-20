@@ -1,0 +1,82 @@
+pipeline World_Dev_Pipeline {
+
+  World_Dev_Extractor
+    -> World_Dev_XLSXInterpreter
+    -> World_Dev_SheetPicker
+    -> World_Dev_DataSelector
+    -> World_Dev_CellWriter;
+
+  World_Dev_CellWriter
+  -> bondIssuanceInterpreter
+  -> bondIssuance_Loader;
+
+  World_Dev_CellWriter
+  -> gdpPerCapitaInterpreter
+  -> gdpPerCapita_Loader;
+
+
+  block World_Dev_Extractor oftype HttpExtractor {
+
+    url: "https://thedocs.worldbank.org/en/doc/7d852628d96b9411d43e5d36d5dff941-0050062022/original/Graphs-Chapter-5-02082022.xlsx";
+  }
+
+  block World_Dev_XLSXInterpreter oftype XLSXInterpreter { }
+
+  block World_Dev_SheetPicker oftype SheetPicker {
+    sheetName: "Figure S5.1.2";
+    }
+
+  block World_Dev_DataSelector oftype CellRangeSelector {
+    select: range P2:S45;
+    }
+
+  block World_Dev_CellWriter oftype CellWriter {
+    at: range A1:D1;
+    write: [ "Country Code", "Economy", "GDP per Capita", "Bond Issuance Share" ];
+    }
+
+
+  block bondIssuanceInterpreter oftype TableInterpreter {
+   header: true;
+   columns: [
+     "Country Code" oftype text,
+     "Bond Issuance Share" oftype bondsvaltype,
+   ];
+ }
+
+ block bondIssuance_Loader oftype SQLiteLoader {
+    table: "bondIssuance";
+    file: "country-stats.sqlite";
+  }
+
+  block gdpPerCapitaInterpreter oftype TableInterpreter {
+   header: true;
+   columns: [
+     "Country Code" oftype text,
+     "GDP per Capita" oftype GDPvaltype,
+   ];
+ }
+
+ block gdpPerCapita_Loader oftype SQLiteLoader {
+    table: "gdpPerCapita";
+    file: "country-stats.sqlite";
+  }
+
+valuetype bondsvaltype oftype decimal {
+    constraints: [ bondsvaltypevalue ];
+}
+
+constraint bondsvaltypevalue oftype RangeConstraint {
+    lowerBound: 0;
+    lowerBoundInclusive: true;
+    upperBound: 1;
+    upperBoundInclusive: true;
+    }
+
+valuetype GDPvaltype oftype decimal {
+    constraints: [ GDPvaltypevalue ];
+}
+
+constraint GDPvaltypevalue on decimal:
+    value >= 0;
+}
