@@ -20,14 +20,14 @@ The project’s core goals are to create an efficient pipeline for data collecti
 
 <!-- Describe each datasources you plan to use in a section. Use the prefic "DatasourceX" where X is the id of the datasource. -->
 
-### Datasource1: US Estimated Crimes
+### Datasource 1: US Estimated Crimes
 * Metadata URL: https://www.kaggle.com/datasets/tunguz/us-estimated-crimes/
 * Data URL: https://www.kaggle.com/datasets/tunguz/us-estimated-crimes/download?datasetVersionNumber=1
 * Data Type: CSV
 
 This dataset includes FBI crime estimates for the U.S. and each state from 1979 to 2019, offering a historical view of crime trends at both national and state levels.
 
-### Datasource1: Chicago Crime Data
+### Datasource 2: Chicago Crime Data
 * Metadata URL: https://www.kaggle.com/datasets/elijahtoumoua/chicago-analysis-of-crime-data-dashboard/
 * Data URL: https://www.kaggle.com/datasets/elijahtoumoua/chicago-analysis-of-crime-data-dashboard/download?datasetVersionNumber=1
 * Data Type: CSV
