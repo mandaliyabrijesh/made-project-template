@@ -1,0 +1,105 @@
+pipeline temp_measure_Pipeline {
+
+  temp_measure_Extractor
+    -> temp_measure_Interpreter
+    -> temp_measure_FileExtractor
+    -> temp_measure_TextFileInterpreter
+    -> temp_measure_CSVInterpreter
+    -> temp_measure_ColumnDeleter
+    -> temp_measure_DataSelector
+    -> temp_measure_CellWriter
+    -> temp_measure_TableInterpreter
+    -> temp_measure_CelsiusToFahrenheittemperature
+    -> temp_measure_CelsiusToFahrenheitbattery_temperature
+    -> temp_measure_Loader;
+
+  block temp_measure_Extractor oftype HttpExtractor {
+
+    url: "https://www.mowesta.com/data/measure/mowesta-dataset-20221107.zip";
+  }
+
+   block temp_measure_Interpreter oftype ArchiveInterpreter {
+   archiveType: "zip";
+   }
+
+    block temp_measure_FileExtractor oftype FilePicker {
+   path: "./data.csv";
+ }
+ 
+ block temp_measure_TextFileInterpreter oftype TextFileInterpreter { }
+ 
+ block temp_measure_CSVInterpreter oftype CSVInterpreter {
+    delimiter: ';';
+  }
+
+  block temp_measure_ColumnDeleter  oftype ColumnDeleter  {
+    delete: [column F, column G, column H, column I, column K, column L, column M, column N, column O, column P, column Q, column R];
+ }
+
+ block temp_measure_DataSelector oftype CellRangeSelector {
+    select: range A1:J*;
+    }
+
+  block temp_measure_CellWriter oftype CellWriter {
+    at: range A1:F1;
+    write: [ "id", "producer", "model", "month", "temperature", "battery_temperature" ];
+    }
+
+  block temp_measure_TableInterpreter oftype TableInterpreter {
+    header: true;
+    columns: [
+      "id" oftype bigint,
+      "producer" oftype text,
+      "model" oftype text,
+      "month" oftype bigint,
+      "temperature" oftype float,
+      "battery_temperature" oftype float
+    ];
+  }
+
+ transform CelsiusToFahrenheit {
+  from Celsius oftype decimal;
+  to Fahrenheit oftype decimal;
+  Fahrenheit: (Celsius * 9/5) + 32;
+ }
+
+block temp_measure_CelsiusToFahrenheittemperature oftype TableTransformer {
+  inputColumns: ['temperature'];
+  outputColumn: 'temperature';
+  uses: CelsiusToFahrenheit;
+}
+
+block temp_measure_CelsiusToFahrenheitbattery_temperature oftype TableTransformer {
+  inputColumns: ['battery_temperature'];
+  outputColumn: 'battery_temperature';
+  uses: CelsiusToFahrenheit;
+}
+
+valuetype float oftype decimal{
+  constraints: [floatvalue];
+  }
+
+constraint floatvalue oftype RangeConstraint {
+  lowerBound: -190;
+	lowerBoundInclusive: true;
+	upperBound: 190;
+	upperBoundInclusive: true;
+  }
+
+valuetype bigint oftype integer {
+  constraints: [ bigintvalue ];
+}
+
+constraint bigintvalue oftype RangeConstraint {
+  lowerBound: 1;
+  lowerBoundInclusive: true;
+  upperBound: 10000000000;
+  upperBoundInclusive: true;
+  }
+
+  block temp_measure_Loader oftype SQLiteLoader {
+    table: "temperatures";
+    file: "temperatures.sqlite";
+  }
+
+}
