@@ -59,12 +59,13 @@ def process_chicago_crime_data(input_path):
     return df
 
 # Function to create SQLite file
-def save_to_sqlite(df, db_name, table_name):
+def save_to_sqlite(db_name, tables):
     conn = sqlite3.connect(db_name)  # Use .sqlite extension
 
-    # Insert data
-    df.to_sql(table_name, conn, if_exists='replace', index=False)
-    print(f"{table_name}.sqlite file created.")
+    for table_name, df in tables.items():
+        # Insert data
+        df.to_sql(table_name, conn, if_exists='replace', index=False)
+        print(f"{table_name} saved to {db_name}.")
 
     conn.commit()
     conn.close()
@@ -98,8 +99,9 @@ def run_pipeline():
     chicago_crime_data_df = process_chicago_crime_data(crime_data_file_path)
 
     # Save the data to SQLite with .sqlite extension in the data folder
-    save_to_sqlite(us_estimated_crimes_df, os.path.join(parent_data_dir, 'us_estimated_crimes.sqlite'), 'us_estimated_crimes_table')
-    save_to_sqlite(chicago_crime_data_df, os.path.join(parent_data_dir, 'chicago_crime_data.sqlite'), 'chicago_crime_data_table')
+    db_path = os.path.join(parent_data_dir, 'crime_data.sqlite')
+
+    save_to_sqlite(db_path, {'us_estimated_crimes': us_estimated_crimes_df, 'chicago_crime_data':chicago_crime_data_df })
     
     files_to_rename = { 'CrimeDate (1).csv': 'chicago_crime_data.csv', 'estimated_crimes_1979_2019.csv': 'us_estimated_crimes.csv'}
     
