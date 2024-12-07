@@ -1,0 +1,26 @@
+name: Test Data Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-data-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: main
+
+      # Install python
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      # Run tests pipeline
+      - name: Data Pipeline
+        run: |
+          chmod +x ./main/project/tests.sh
