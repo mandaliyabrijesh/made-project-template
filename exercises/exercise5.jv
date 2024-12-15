@@ -1,0 +1,83 @@
+pipeline rhoenenergie_bus_data_Pipeline {
+
+  rhoenenergie_bus_data_Extractor
+    -> rhoenenergie_bus_data_Interpreter
+    -> rhoenenergie_bus_data_FileExtractor
+    -> rhoenenergie_bus_data_TextFileInterpreter
+    -> rhoenenergie_bus_data_CSVInterpreter
+    -> rhoenenergie_bus_data_TableInterpreter
+    -> rhoenenergie_bus_data_Loader;
+
+  block rhoenenergie_bus_data_Extractor oftype HttpExtractor {
+    url: "https://gtfs.rhoenenergie-bus.de/GTFS.zip";
+  }
+
+  block rhoenenergie_bus_data_Interpreter oftype ArchiveInterpreter {
+    archiveType: "zip";
+    }
+  
+  block rhoenenergie_bus_data_FileExtractor oftype FilePicker {
+   path: "./stops.txt";
+   }
+ 
+  block rhoenenergie_bus_data_TextFileInterpreter oftype TextFileInterpreter {  }
+ 
+  block rhoenenergie_bus_data_CSVInterpreter oftype CSVInterpreter {
+    delimiter: ',';
+    enclosing:'"';
+    }
+
+  block rhoenenergie_bus_data_TableInterpreter oftype TableInterpreter {
+    header: true;
+    columns: [
+      "stop_id" oftype bigint,
+      "stop_name" oftype accept_stop_name,
+      "stop_lat" oftype geographic_val,
+      "stop_lon" oftype geographic_val,
+      "zone_id" oftype rhoenenergie_bus_zone_value
+    ];
+  }
+  
+  valuetype geographic_val oftype decimal{
+    constraints: [floatvalue];
+  }
+  
+  constraint floatvalue oftype RangeConstraint {
+    lowerBound: -90;
+    lowerBoundInclusive: true;
+    upperBound: 90;
+    upperBoundInclusive: true;
+    }
+    
+    valuetype bigint oftype integer {
+      constraints: [ bigintvalue ];
+      }
+      
+  constraint bigintvalue oftype RangeConstraint {
+    lowerBound: 1;
+    lowerBoundInclusive: true;
+    upperBound: 10000000000;
+    upperBoundInclusive: true;
+    }
+
+  valuetype rhoenenergie_bus_zone_value oftype integer {
+    constraints: [ rhoenenergie_bus_zone_id ];
+    }
+
+  constraint rhoenenergie_bus_zone_id on decimal:
+    value == 1925;
+
+  valuetype accept_stop_name oftype text {
+    constraints: [ accept_stop_name_value ];
+    }
+
+  constraint accept_stop_name_value oftype RegexConstraint {
+    regex: /^[a-zA-ZäöüÄÖÜß\s]+$/;
+    }
+
+  block rhoenenergie_bus_data_Loader oftype SQLiteLoader {
+    table: "stops";
+    file: "gtfs.sqlite";
+  }
+
+}
